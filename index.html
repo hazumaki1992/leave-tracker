@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>วันลา 2569</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #faf8ff; color: #2d2d2d; min-height: 100vh; }
+
+  .header {
+    background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #60a5fa 100%);
+    padding: 22px 24px 60px; position: relative; overflow: hidden;
+  }
+  .header::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:40px; background:#faf8ff; border-radius:50% 50% 0 0/100% 100% 0 0; }
+  .header h1 { font-size:22px; font-weight:800; color:white; }
+  .header-meta { display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap; }
+  .header p { font-size:12px; color:rgba(255,255,255,0.8); }
+  .header-emoji { font-size:28px; margin-bottom:6px; display:block; }
+  .sync-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,0.25); border-radius:20px; padding:2px 10px; font-size:11px; color:white; font-weight:600; cursor:pointer; border:none; transition:background 0.2s; }
+  .sync-badge:hover { background:rgba(255,255,255,0.4); }
+  .spin { animation:spin 1s linear infinite; display:inline-block; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Search */
+  .search-wrap { padding:0 20px; margin-top:-28px; position:relative; z-index:10; }
+  .search-inner { background:white; border-radius:18px; box-shadow:0 8px 30px rgba(129,140,248,0.2); padding:14px 18px; display:flex; align-items:center; gap:10px; }
+  .search-icon { font-size:18px; flex-shrink:0; }
+  .search-inner input { border:none; outline:none; font-size:15px; width:100%; background:transparent; color:#2d2d2d; }
+  .search-inner input::placeholder { color:#c0b8d8; }
+  .clear-btn { background:#ede9fe; border:none; border-radius:50%; width:26px; height:26px; cursor:pointer; font-size:12px; color:#7c3aed; display:none; align-items:center; justify-content:center; flex-shrink:0; }
+  .clear-btn.show { display:flex; }
+
+  /* Chips grouped by team color */
+  .chips-section { padding:14px 20px 10px; }
+  .team-group { margin-bottom:14px; }
+  .team-label {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; letter-spacing:0.4px;
+    margin-bottom:8px; padding:3px 10px; border-radius:20px;
+    color:white;
+  }
+  .team-label.red    { background:#ef4444; }
+  .team-label.yellow { background:#f59e0b; }
+  .team-label.green  { background:#10b981; }
+  .team-label.blue   { background:#3b82f6; }
+  .team-label.purple { background:#8b5cf6; }
+
+  .chips-row { display:flex; flex-wrap:wrap; gap:7px; }
+  .chip {
+    display:flex; align-items:center; gap:5px;
+    padding:5px 12px 5px 5px; border-radius:30px; cursor:pointer;
+    background:white; border:1.5px solid #e8e4f5;
+    transition:all 0.15s; font-size:13px; font-weight:500; color:#4b5563;
+    box-shadow:0 2px 6px rgba(0,0,0,0.04);
+  }
+  .chip:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+  .chip.active { color:white; border-color:transparent; box-shadow:0 4px 14px rgba(0,0,0,0.2); }
+  .chip.active.red    { background:#ef4444; }
+  .chip.active.yellow { background:#f59e0b; }
+  .chip.active.green  { background:#10b981; }
+  .chip.active.blue   { background:#3b82f6; }
+  .chip.active.purple { background:#8b5cf6; }
+  .chip-avatar {
+    width:23px; height:23px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:white; flex-shrink:0;
+  }
+  .chip-avatar.red    { background:#ef4444; }
+  .chip-avatar.yellow { background:#f59e0b; }
+  .chip-avatar.green  { background:#10b981; }
+  .chip-avatar.blue   { background:#3b82f6; }
+  .chip-avatar.purple { background:#8b5cf6; }
+  .chip.active .chip-avatar { background:rgba(255,255,255,0.3); }
+
+  .chips-search-empty { font-size:13px; color:#c0b8d8; padding:8px 0; }
+
+  /* Main */
+  .main { padding:8px 20px 32px; }
+  .empty-state { text-align:center; padding:50px 20px; }
+  .empty-state .big-icon { font-size:52px; margin-bottom:12px; }
+  .empty-state p { font-size:14px; color:#a0a0b8; line-height:1.7; }
+
+  .loading-screen { text-align:center; padding:60px 20px; }
+  .load-icon { font-size:40px; margin-bottom:12px; animation:float 1.5s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .loading-screen p { font-size:14px; color:#a0a0b8; }
+  .loading-screen .sub { font-size:12px; color:#c0b8d8; margin-top:4px; }
+
+  /* Person */
+  .person-card { border-radius:20px; padding:18px 20px; margin-bottom:14px; display:flex; align-items:center; gap:14px; color:white; position:relative; overflow:hidden; }
+  .person-card::before { content:''; position:absolute; top:-20px; right:-20px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,0.1); }
+  .person-big-avatar { width:52px; height:52px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; background:rgba(255,255,255,0.25); flex-shrink:0; }
+  .person-name { font-size:20px; font-weight:800; }
+  .person-sub { font-size:12px; opacity:0.8; margin-top:2px; }
+  .person-total { margin-left:auto; text-align:center; background:rgba(255,255,255,0.2); border-radius:12px; padding:8px 14px; }
+  .total-num { font-size:22px; font-weight:800; line-height:1; }
+  .total-label { font-size:11px; opacity:0.85; font-weight:600; }
+
+  .section-title { font-size:11px; font-weight:700; color:#a78bfa; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; margin-top:4px; }
+
+  /* Quota cards */
+  .quota-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
+  .quota-card { background:white; border-radius:16px; padding:14px; border:1.5px solid #f0eef8; box-shadow:0 2px 10px rgba(0,0,0,0.04); transition:transform 0.15s; }
+  .quota-card:hover { transform:translateY(-2px); }
+  .qc-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .qc-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:8px; font-size:11px; font-weight:700; }
+  .qc-remaining { font-size:11px; font-weight:700; }
+  .qc-remaining.ok  { color:#10b981; } .qc-remaining.warn { color:#f59e0b; }
+  .qc-remaining.over { color:#ef4444; } .qc-remaining.unlimited { color:#9ca3af; }
+  .qc-nums { display:flex; align-items:baseline; gap:3px; margin-bottom:5px; }
+  .qc-used { font-size:28px; font-weight:900; line-height:1; }
+  .qc-of { font-size:12px; color:#d1d5db; }
+  .qc-name { font-size:12px; color:#6b7280; margin-bottom:7px; }
+  .qc-bar-wrap { height:5px; background:#f3f4f6; border-radius:10px; overflow:hidden; }
+  .qc-bar { height:100%; border-radius:10px; transition:width 0.6s ease; }
+
+  .t-A .qc-badge{background:#fce7f3;color:#db2777} .t-A .qc-used{color:#db2777} .t-A .qc-bar{background:linear-gradient(90deg,#f9a8d4,#ec4899)}
+  .t-B .qc-badge{background:#d1fae5;color:#059669} .t-B .qc-used{color:#059669} .t-B .qc-bar{background:linear-gradient(90deg,#6ee7b7,#10b981)}
+  .t-C .qc-badge{background:#fef3c7;color:#d97706} .t-C .qc-used{color:#d97706} .t-C .qc-bar{background:linear-gradient(90deg,#fde68a,#f59e0b)}
+  .t-D .qc-badge{background:#fee2e2;color:#dc2626} .t-D .qc-used{color:#dc2626} .t-D .qc-bar{background:linear-gradient(90deg,#fca5a5,#ef4444)}
+  .t-E .qc-badge{background:#ede9fe;color:#7c3aed} .t-E .qc-used{color:#7c3aed} .t-E .qc-bar{background:linear-gradient(90deg,#c4b5fd,#8b5cf6)}
+  .t-F .qc-badge{background:#d1fae5;color:#065f46} .t-F .qc-used{color:#065f46} .t-F .qc-bar{background:linear-gradient(90deg,#6ee7b7,#059669)}
+  .t-G .qc-badge{background:#fce7f3;color:#9d174d} .t-G .qc-used{color:#9d174d} .t-G .qc-bar{background:linear-gradient(90deg,#f9a8d4,#db2777)}
+
+  /* Log */
+  .log-card { background:white; border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.04); border:1.5px solid #f0eef8; }
+  .log-header { padding:12px 16px; background:#f9f7ff; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0eef8; }
+  .log-header-text { font-size:13px; font-weight:700; color:#4b5563; }
+  .log-pill { background:#818cf8; color:white; border-radius:20px; padding:2px 10px; font-size:11px; font-weight:700; }
+  .log-row { display:flex; align-items:center; padding:10px 16px; border-bottom:1px solid #faf9ff; gap:10px; }
+  .log-row:last-child { border-bottom:none; }
+  .log-row:hover { background:#fdfcff; }
+  .log-date { font-size:12px; color:#9ca3af; min-width:82px; }
+  .log-type { flex:1; }
+  .log-days { font-size:13px; font-weight:700; color:#6b7280; }
+
+  @media (min-width:500px) { .quota-grid { grid-template-columns:repeat(3,1fr); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-emoji">🌸</span>
+  <h1>ตรวจสอบวันลา</h1>
+  <div class="header-meta">
+    <p id="headerSub">กำลังโหลดข้อมูล...</p>
+    <button class="sync-badge" onclick="loadCalendar(true)" id="syncBtn">
+      <span id="syncIcon">🔄</span> sync
+    </button>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <div class="search-inner">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="ค้นหาชื่อเล่น..." autocomplete="off" disabled>
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div class="chips-section" id="chipsSection">
+  <div class="loading-screen" style="padding:20px 0">
+    <div class="load-icon" style="font-size:28px">📅</div>
+    <p>กำลังดึงข้อมูลจาก Calendar...</p>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+</div>
+
+<script>
+const CALENDAR_ID = 'e33687e5f8a076613aa80febbc1c860ba07e78ac443b79847844ebdee1e9d03b@group.calendar.google.com';
+
+const LEAVE_TYPES = {
+  A:{ name:'ลากิจ',           quota:3,    emoji:'📋' },
+  B:{ name:'พักร้อน',         quota:7,    emoji:'🏖️' },
+  C:{ name:'ลาป่วย (ไม่มีใบ)', quota:10,  emoji:'🤒' },
+  D:{ name:'ลาป่วย (มีใบ)',   quota:20,   emoji:'🏥' },
+  E:{ name:'Shortbreak',      quota:4,    emoji:'☕' },
+  F:{ name:'ลาพิเศษ',         quota:null, emoji:'✨' },
+  G:{ name:'ลาวันเกิด',       quota:1,    emoji:'🎂' },
+};
+
+const TEAM_META = {
+  red:    { label:'❤️ PM',         bg:'#ef4444', grad:'#ef4444,#f87171' },
+  yellow: { label:'💛 ทีม QA',     bg:'#f59e0b', grad:'#f59e0b,#fbbf24' },
+  green:  { label:'💚 ทีม CS',     bg:'#10b981', grad:'#059669,#34d399' },
+  blue:   { label:'💙 ทีม Ingame', bg:'#3b82f6', grad:'#2563eb,#60a5fa' },
+  purple: { label:'💜 ทีม Content',bg:'#8b5cf6', grad:'#7c3aed,#a78bfa' },
+};
+
+// Manual team overrides (ย้ายทีม)
+const TEAM_OVERRIDE = {
+  'Kenji': 'blue',   // ย้ายมา ทีม Ingame
+  'Poo':   'yellow', // ย้ายมา ทีม QA
+  'Bank':  'yellow', // ย้ายมา ทีม QA
+  'Nueng': 'red',    // ย้ายมา PM
+};
+
+// Parse: "Name💛 - X ประเภท (duration (-n))"
+// Returns { name, team, type_code, days } or null
+function parseEvent(title) {
+  if (!title) return null;
+  // Match name+emoji then " - X " then content with (-number) — no emoji in regex
+  const m = title.match(/^(.+?)\s*-\s*([A-G])\s+.+?\((-[\d.]+)\)/u);
+  if (!m) return null;
+  const raw = m[1];           // e.g. "Mint💛"
+  const type_code = m[2];
+  const days = Math.abs(parseFloat(m[3]));
+
+  // Detect team by iterating codepoints (avoids emoji encoding issues in regex)
+  const HEART_TEAMS = [
+    [0x2764,  'red'],    // ❤
+    [0x1F49B, 'yellow'], // 💛
+    [0x1F49A, 'green'],  // 💚
+    [0x1F499, 'blue'],   // 💙
+    [0x1F49C, 'purple'], // 💜
+  ];
+  let team = 'unknown', name = raw;
+  for (const char of [...raw]) {
+    const cp = char.codePointAt(0);
+    const found = HEART_TEAMS.find(([code]) => code === cp);
+    if (found) {
+      team = found[1];
+      name = raw.replace(char, '').replace('️', '').trim();
+      break;
+    }
+  }
+  if (!name || !days) return null;
+  return { name, team, type_code, days };
+}
+
+let LEAVE_DATA = [];   // [{ name, team, type_code, days, date }]
+let NAME_TEAM = {};    // name → team
+let allNames = [];
+let selectedName = null;
+let isLoading = false;
+
+async function loadCalendar(manual=false) {
+  if (isLoading) return;
+  isLoading = true;
+  document.getElementById('syncIcon').innerHTML = '<span class="spin">⏳</span>';
+  document.getElementById('searchInput').disabled = true;
+  document.getElementById('chipsSection').innerHTML = `<div style="padding:12px 0;color:#c0b8d8;font-size:13px">${manual?'กำลัง sync...':'กำลังโหลด...'}</div>`;
+
+  const year = new Date().getFullYear();
+  const startTime = `${year}-01-01T00:00:00`;
+  const endTime   = `${year}-12-31T23:59:59`;
+  const events = [];
+  let pageToken = null;
+
+  try {
+    do {
+      const args = { calendarId:CALENDAR_ID, startTime, endTime, pageSize:250, orderBy:'startTime' };
+      if (pageToken) args.pageToken = pageToken;
+      const res = await window.cowork.callMcpTool('mcp__9212e730-43be-4918-ae7f-3e7fdf927fc0__list_events', args);
+
+      // Debug: show raw response shape
+      console.log('callMcpTool raw type:', typeof res);
+      console.log('callMcpTool raw (first 300):', JSON.stringify(res).slice(0,300));
+
+      // Handle multiple possible response shapes
+      let data;
+      if (typeof res === 'string') {
+        data = JSON.parse(res);
+      } else if (res && typeof res === 'object') {
+        // Could be wrapped: { content: [{type:'text', text: '...json...'}] }
+        if (Array.isArray(res.content)) {
+          const textItem = res.content.find(c => c.type === 'text');
+          data = textItem ? JSON.parse(textItem.text) : res;
+        } else {
+          data = res;
+        }
+      } else {
+        data = {};
+      }
+
+      console.log('Parsed data keys:', Object.keys(data));
+      console.log('Events count:', (data.events||[]).length);
+
+      (data.events||[]).forEach(e => events.push(e));
+      pageToken = data.nextPageToken || null;
+    } while (pageToken);
+
+    // Parse & deduplicate
+    const seen = new Set();
+    LEAVE_DATA = [];
+    NAME_TEAM  = {};
+    events.forEach(e => {
+      const title = (e.summary||'').trim();
+      const start = e.start||{};
+      const date  = (start.date||start.dateTime||'').slice(0,10);
+      if (!date) return;
+      const p = parseEvent(title);
+      if (!p) return;
+      const key = `${p.name}|${date}|${p.type_code}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      const team = TEAM_OVERRIDE[p.name] || p.team;
+      LEAVE_DATA.push({ name:p.name, team, type_code:p.type_code, days:p.days, date });
+      NAME_TEAM[p.name] = team;
+    });
+
+    LEAVE_DATA.sort((a,b)=>a.date.localeCompare(b.date));
+    allNames = [...new Set(LEAVE_DATA.map(e=>e.name))].sort();
+
+    const now = new Date().toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('headerSub').textContent = `ข้อมูลปี ${year+543} · sync ${now}`;
+    document.getElementById('syncIcon').textContent = '🔄';
+    document.getElementById('searchInput').disabled = false;
+
+    renderChips('');
+    if (selectedName && allNames.includes(selectedName)) {
+      renderView(selectedName);
+    } else {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="empty-state">
+          <div class="big-icon">🌷</div>
+          <p>เลือกชื่อจากทีมด้านบน<br>หรือพิมพ์ค้นหาในช่อง Search</p>
+        </div>`;
+    }
+  } catch(err) {
+    console.error(err);
+    document.getElementById('syncIcon').textContent = '⚠️';
+    document.getElementById('chipsSection').innerHTML = '';
+    document.getElementById('mainContent').innerHTML = `
+      <div class="empty-state">
+        <div class="big-icon">😵</div>
+        <p>โหลดไม่สำเร็จ<br><small style="color:#ef4444">${err.message||err}</small></p>
+        <br><button onclick="loadCalendar(true)" style="padding:8px 20px;border-radius:20px;border:none;background:#818cf8;color:white;cursor:pointer;font-size:13px;margin-top:10px">ลองใหม่</button>
+      </div>`;
+  }
+  isLoading = false;
+}
+
+function renderChips(filter) {
+  const section = document.getElementById('chipsSection');
+  const ORDER = ['red','yellow','green','blue','purple'];
+  let html = '';
+
+  if (filter) {
+    // flat filtered list
+    const matched = allNames.filter(n=>n.toLowerCase().includes(filter.toLowerCase()));
+    if (!matched.length) {
+      section.innerHTML = `<div class="chips-search-empty">ไม่พบ "${filter}" 🥲</div>`;
+      return;
+    }
+    html += `<div class="chips-row" style="padding:4px 0">`;
+    matched.forEach(n => {
+      const team = NAME_TEAM[n]||'yellow';
+      const active = n===selectedName ? 'active '+team : '';
+      html += chipHTML(n, team, active);
+    });
+    html += `</div>`;
+  } else {
+    // grouped by team
+    ORDER.forEach(team => {
+      const names = allNames.filter(n=>NAME_TEAM[n]===team);
+      if (!names.length) return;
+      const meta = TEAM_META[team];
+      html += `<div class="team-group">
+        <div class="team-label ${team}">${meta.label} · ${names.length} คน</div>
+        <div class="chips-row">`;
+      names.forEach(n => {
+        const active = n===selectedName ? 'active '+team : '';
+        html += chipHTML(n, team, active);
+      });
+      html += `</div></div>`;
+    });
+  }
+
+  section.innerHTML = html;
+}
+
+function chipHTML(name, team, activeClass) {
+  const safe = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return `<div class="chip ${activeClass}" onclick="selectName('${safe}')">
+    <div class="chip-avatar ${team}">${name[0].toUpperCase()}</div>${name}</div>`;
+}
+
+function selectName(name) {
+  selectedName = name;
+  document.getElementById('searchInput').value = name;
+  document.getElementById('clearBtn').classList.add('show');
+  renderChips(name);
+  renderView(name);
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('clearBtn').classList.remove('show');
+  selectedName = null;
+  renderChips('');
+  document.getElementById('mainContent').innerHTML = `
+    <div class="empty-state">
+      <div class="big-icon">🌷</div>
+      <p>เลือกชื่อจากทีมด้านบน<br>หรือพิมพ์ค้นหาในช่อง Search</p>
+    </div>`;
+}
+
+function fmtDate(d) {
+  return new Date(d+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short'});
+}
+
+function renderView(name) {
+  const recs = LEAVE_DATA.filter(e=>e.name===name);
+  const main = document.getElementById('mainContent');
+  if (!recs.length) { main.innerHTML=`<div class="empty-state"><div class="big-icon">🔍</div><p>ไม่พบข้อมูลการลาของ "${name}"</p></div>`; return; }
+
+  const tally = {};
+  recs.forEach(r=>{ tally[r.type_code]=(tally[r.type_code]||0)+r.days; });
+  const total = recs.reduce((s,r)=>s+r.days, 0);
+  const team  = NAME_TEAM[name]||'yellow';
+  const meta  = TEAM_META[team];
+
+  const cards = Object.keys(LEAVE_TYPES).map(code=>{
+    const info = LEAVE_TYPES[code];
+    const used = tally[code]||0;
+    const q = info.quota;
+    const pct = q ? Math.min((used/q)*100,100) : 0;
+    const rem = q!==null ? q-used : null;
+    const remText = rem===null?'ไม่จำกัด':rem>0?`เหลือ ${rem} วัน`:rem===0?'ใช้ครบแล้ว':`เกิน ${Math.abs(rem)} วัน`;
+    const remClass = rem===null?'unlimited':rem>1?'ok':rem===1?'warn':'over';
+    return `<div class="quota-card t-${code}">
+      <div class="qc-top">
+        <span class="qc-badge">${info.emoji} ${code}</span>
+        <span class="qc-remaining ${remClass}">${remText}</span>
+      </div>
+      <div class="qc-nums"><span class="qc-used">${used}</span><span class="qc-of">${q!==null?'/ '+q:''} วัน</span></div>
+      <div class="qc-name">${info.name}</div>
+      ${q!==null?`<div class="qc-bar-wrap"><div class="qc-bar" style="width:${pct}%"></div></div>`:''}
+    </div>`;
+  }).join('');
+
+  const rows = recs.map(r=>{
+    const info = LEAVE_TYPES[r.type_code]||{};
+    return `<div class="log-row">
+      <span class="log-date">${fmtDate(r.date)}</span>
+      <span class="log-type"><span class="log-badge t-${r.type_code} qc-badge">${info.emoji||''} ${info.name||r.type_code}</span></span>
+      <span class="log-days">−${r.days} วัน</span>
+    </div>`;
+  }).join('');
+
+  main.innerHTML = `
+    <div class="person-card" style="background:linear-gradient(135deg,${meta.grad})">
+      <div class="person-big-avatar">${name[0].toUpperCase()}</div>
+      <div>
+        <div class="person-name">${name}</div>
+        <div class="person-sub">${meta.label} · ${recs.length} รายการ</div>
+      </div>
+      <div class="person-total">
+        <div class="total-num">${total}</div>
+        <div class="total-label">วันที่ลา</div>
+      </div>
+    </div>
+    <div class="section-title">📊 โควต้าวันลา</div>
+    <div class="quota-grid">${cards}</div>
+    <div class="section-title">📅 ประวัติการลา</div>
+    <div class="log-card">
+      <div class="log-header"><span class="log-header-text">รายการทั้งหมด</span><span class="log-pill">${recs.length}</span></div>
+      ${rows}
+    </div>`;
+}
+
+document.getElementById('searchInput').addEventListener('input', function(){
+  const val = this.value.trim();
+  document.getElementById('clearBtn').classList.toggle('show', val.length>0);
+  renderChips(val);
+  const exact = allNames.find(n=>n.toLowerCase()===val.toLowerCase());
+  if (exact) { selectedName=exact; renderView(exact); }
+  else if (!val) { selectedName=null; clearSearch(); }
+});
+
+loadCalendar();
+</script>
+</body>
+</html>
